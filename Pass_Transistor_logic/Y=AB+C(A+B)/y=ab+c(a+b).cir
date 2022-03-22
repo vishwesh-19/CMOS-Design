@@ -1,0 +1,39 @@
+** Y = AB + C(A+B)
+
+.subckt inverter 1 2 3
+mp 2 1 3 3 pmod w=100u l=1u
+mn 2 1 0 0 nmod w=40u l=1u
+.model pmod pmos Vto=-1 Kp=80u
+.model nmod nmos Vto=1 Kp=200u
+.ends
+
+.subckt passAnd 1 2 3 4
+m1 1 2 4 4 nmod w=40u l=1u
+m2 2 3 4 4 nmod w=40u l=1u
+.model nmod nmos Vto=1 Kp=200u
+.ends
+
+.subckt passOR 1 2 3 4
+m1 1 3 4 4 nmod w=40u l=1u
+m2 2 2 4 4 nmod w=40u l=1u
+.model nmod nmos Vto=1 Kp=200u
+.ends
+
+Vdd 1 0 dc 5V
+Va 10 0 pulse(0 5 0 0 0 16ns 32ns)
+Vb 11 0 pulse(0 5 0 0 0 12ns 32ns)
+Vc 12 0 pulse(0 5 0 0 0 10ns 32ns)
+xb 11 13 1 inverter
+xc 12 14 1 inverter
+x_ab 10 11 13 17 passAnd
+x_ab_bar 17 18 1 inverter
+x_aORb 10 11 13 15 passOR
+x_aORb_and_c 15 12 14 16 passAnd
+x_y 16 17 18 19 passOR
+.tran 0.1ns 32ns
+.control
+run
+plot V(10) V(11) V(12)
+plot V(19)
+.endc
+.end
